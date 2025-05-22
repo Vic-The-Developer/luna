@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar navbar-dark bg-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/">Store Admin</a>
+      <div>
+        <a href="/" class="btn btn-outline-light me-2">Main Site</a>
+        <a href="/logout" class="btn btn-danger">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Dashboard Content -->
+  <div class="container mt-4">
+    <h1 class="text-center mb-4">Admin Dashboard</h1>
+
+    <!-- Add Product Button -->
+    <div class="text-end mb-3">
+      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addProductModal">Add Product</button>
+    </div>
+
+    <!-- Display messages -->
+    <% if (infoMessage) { %>
+      <div class="alert alert-success alert-dismissible fade show mt-3" role="alert" style="text-align: center;">
+          <%= infoMessage %>
+      </div>
+    <% } %>
+
+    <!-- Products Table -->
+    <% if (prods.length > 0) { %>
+      <table class="table table-bordered table-hover">
+        <thead class="table-dark">
+          <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Price</th>
+            <th>Category</th>
+            <th>Images</th>
+            <th>Availability</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% prods.forEach((prod, index) => { %>
+            <tr>
+              <td><%= index + 1 %></td>
+              <td><%= prod.prodName %></td>
+              <td>Ksh <%= prod.price %></td>
+              <td><%= prod.prodCat %></td>
+              <td>
+                <div style="display: flex; flex-wrap: wrap;">
+                  <% prod.images.forEach(image => { %>
+                    <img src="<%= image %>" alt="<%= prod.prodName %>" style="width: 50px; height: 50px; object-fit: cover; margin: 2px;">
+                  <% }) %>
+                </div>
+              </td>              
+              <td><%= prod.availability ? 'In Stock' : 'Out of Stock' %></td>
+              <td>
+                <a href="#" class="btn btn-primary btn-sm" title="Edit" data-toggle="modal" data-target="#editModal-<%= prod._id %>"><i class="fa fa-edit"></i></a>
+                <button type="submit" class="btn btn-danger btn-sm" onclick="deleteprod('<%= prod._id %>')">
+                    <i class="fa fa-trash"></i> &nbsp; Delete
+                </button>
+                <a href="#" class="btn btn-success btn-sm" title="View Details" data-toggle="modal" data-target="#detailModal-<%= prod._id %>"><i class="fa fa-eye"></i></a>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } else { %>
+      <p class="text-center">No products available. Click "Add Product" to create one.</p>
+    <% } %>
+  </div>
+
+  <!-- Add Product Modal -->
+  <div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addProductModalLabel">Add New Product</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form action="/admin/add-product" method="POST" enctype="multipart/form-data">
+            <div class="mb-3">
+              <label for="name" class="form-label">Product Name</label>
+              <input type="text" class="form-control" id="prodName" name="prodName" required>
+            </div>
+            <div class="mb-3">
+              <label for="description" class="form-label">Product Description</label>
+              <input type="text" class="form-control" id="prodDesc" name="prodDesc" required>
+            </div>
+            <div class="mb-3">
+              <label for="category" class="form-label">Product Category</label>
+              <select class="form-control" id="prodCat" name="prodCat" required>
+                <option value="Laptops">Laptops</option>
+                <option value="Desktops">Desktops</option>
+                <option value="Hardware">Desktop & Laptop Hardware</option>
+                <option value="Printers & Accessories">Printers & Accessories</option>
+                <option value="UPS & Projectors">UPS & Projectors</option>
+                <option value="Starlink">Starlink</option>
+                <option value="Server">Server</option>
+                <option value="Copiers">Copiers</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="price" class="form-label">Price</label>
+              <input type="number" class="form-control" id="price" name="price" required>
+            </div>
+            
+            <div class="mb-3">
+              <label for="availability" class="form-label">Availability</label>
+              <select class="form-control" id="availability" name="availability" required>
+                <option value="true">In Stock</option>
+                <option value="false">Out of Stock</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="images" class="form-label">Product Images (5)</label>
+              <input type="file" class="form-control" id="images" name="images" accept="image/*" multiple required onchange="previewImages(event)">
+            </div>
+            <div class="mb-3" id="imagePreviewContainer"></div>
+            <button type="submit" class="btn btn-success w-100">Add Product</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <% if(prods.length !== 0) { %> 
+    <% prods.forEach((prod)=>{ %>
+      <!-- Edit Modal -->
+      <div class="modal fade" id="editModal-<%= prod._id %>" tabindex="-1" role="dialog" aria-labelledby="editModalLabel-<%= prod._id %>" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <form action="/admin/edit-product/<%= prod._id %>" method="POST" enctype="multipart/form-data">
+              <div class="modal-header">
+                <h5 class="modal-title" id="editModalLabel-<%= prod._id %>">Edit Product</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <div class="form-group">
+                  <label for="name-<%= prod._id %>">Name</label>
+                  <input type="text" class="form-control" id="name-<%= prod._id %>" name="prodName" value="<%= prod.prodName %>" required>
+                </div>
+                <div class="form-group">
+                  <label for="desc-<%= prod._id %>">Name</label>
+                  <input type="text" class="form-control" id="desc-<%= prod._id %>" name="prodDesc" value="<%= prod.prodDesc %>" required>
+                </div>
+                <div class="form-group">
+                  <label for="category-<%= prod._id %>">Category</label>
+                  <input type="text" class="form-control" id="category-<%= prod._id %>" name="prodCat" value="<%= prod.prodCat %>" required>
+                </div>
+                <div class="form-group">
+                  <label for="price-<%= prod._id %>">Price (e.g. 40000)</label>
+                  <input type="number" class="form-control" id="price-<%= prod._id %>" name="price" value="<%= prod.price %>" required>
+                </div>
+                
+                <div class="form-group">
+                  <label for="availability-<%= prod._id %>">Availability</label>
+                  <select class="form-control" id="availability-<%= prod._id %>" name="availability" required>
+                    <option value="true" <%= prod.availability ? 'selected' : '' %>>In Stock</option>
+                    <option value="false" <%= !prod.availability ? 'selected' : '' %>>Out of Stock</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="images-<%= prod._id %>">Update Images (Optional, 5 Images)</label>
+                  <input type="file" class="form-control" id="images-<%= prod._id %>" name="images" accept="image/*" multiple>
+                  <div class="mt-2">
+                    <% prod.images.forEach(image => { %>
+                      <img src="<%= image %>" alt="Thumbnail" style="width: 75px; height: 75px; object-fit: cover; margin-right: 10px;">
+                    <% }) %>
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    <% }) %>
+  <% } %>
+
+  <!--Details Modal-->
+  <% if(prods.length !== 0) { %>
+    <% prods.forEach((prod)=>{ %>
+      <!-- Details Modal -->
+      <div class="modal fade" id="detailModal-<%= prod._id %>" tabindex="-1" role="dialog" aria-labelledby="detailModalLabel-<%= prod._id %>" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="detailModalLabel-<%= prod._id %>">Product Details</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <h5><strong>Product Name:</strong> <br> <%= prod.prodName %></h5>
+              <p><strong>Product Description:</strong> <br> <%= prod.prodDesc %></p>
+              <p><strong>Category:</strong> <br> <%= prod.prodCat %></p>
+              <div class="d-flex flex-wrap">
+                <% prod.images.forEach(image => { %>
+                  <img src="<%= image %>" alt="prod Image" class="img-thumbnail m-1" style="width: 100px; height: 100px; object-fit: cover;">
+                <% }) %>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% }) %>
+  <% } %>
+
+  <!-- Footer -->
+  <footer class="bg-dark text-white text-center py-3 mt-4">
+    <p>&copy; <%= new Date().getFullYear() %> Lunasoft Store. All Rights Reserved.</p>
+  </footer>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Preview Image Script -->
+  <script>
+    function previewImages(event) {
+      const container = document.getElementById('imagePreviewContainer');
+      container.innerHTML = '';
+      Array.from(event.target.files).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = document.createElement('img');
+          img.src = e.target.result;
+          img.style.width = '75px';
+          img.style.height = '75px';
+          img.style.marginRight = '10px';
+          img.style.objectFit = 'cover';
+          container.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+  </script>
+
+
+  <!-- Delete prod Script -->
+  <script>
+    function deleteprod(id) {
+      if (!id) {
+        console.error("prod ID is missing");
+        return;
+      }
+
+      if (confirm("Are you sure you want to delete this prod?")) {
+        const deleteButton = document.querySelector(`button[onclick="deleteprod('${id}')"]`);
+        if (deleteButton) {
+          deleteButton.disabled = true;
+          deleteButton.innerHTML = '<i class="fa fa-spinner fa-spin"></i>'; // Show a spinner
+        }
+
+        fetch(`/admin/delete-product/${id}`, { method: "DELETE" })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              alert(data.message);
+              location.reload(); // Reload the page to reflect changes
+            } else {
+              alert(data.message);
+            }
+          })
+          .catch(err => {
+            console.error(err);
+            alert("An error occurred while deleting the prod. Please try again.");
+          })
+          .finally(() => {
+            if (deleteButton) {
+              deleteButton.disabled = false;
+              deleteButton.innerHTML = '<i class="fa fa-trash"></i>'; // Restore original icon
+            }
+          });
+      }
+    }
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.touchswipe/1.6.18/jquery.touchSwipe.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js"></script>
+</body>
+</html>

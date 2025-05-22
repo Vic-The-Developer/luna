@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title><%= product.prodName %></title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="" name="keywords">
+    <meta content="" name="description">
+
+    <!-- Favicon -->
+    <link href="/img/favicon.ico" rel="icon">
+
+    <!-- Google Web Fonts -->
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet"> 
+
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+  
+    
+
+    <!-- Libraries Stylesheet -->
+    <link href="/lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
+
+    <!-- Customized Bootstrap Stylesheet -->
+    <link href="/css/style.css" rel="stylesheet">
+</head>
+
+<body>
+
+    <div class="col-lg-12" style="display: flex; justify-content: center; align-items: center;" >
+        <nav class="navbar navbar-expand-lg bg-light navbar-light py-3 py-lg-0 px-0">
+            <a href="" class="text-decoration-none d-block d-lg-none">
+                <h1 class="m-0 display-5 font-weight-semi-bold"><span class="text-primary font-weight-bold border px-3 mr-1">Luna</span>Soft</h1>
+            </a>
+            <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbarCollapse">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-between" id="navbarCollapse">
+                <div class="navbar-nav mr-auto py-0">
+                    <a href="/" class="nav-item nav-link">Home</a>
+                    <a href="/shop" class="nav-item nav-link">Shop</a>
+                    <a href="/cart" class="nav-item nav-link">Shopping Cart</a>
+                    <a href="/contact" class="nav-item nav-link">Contact Us</a>
+                </div>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Page Header Start -->
+    <div class="container-fluid bg-secondary mb-5">
+        <div class="d-flex flex-column align-items-center justify-content-center" style="min-height: 300px; background: url('/img/p2.jpg'); background-repeat: no-repeat; background-size: cover;">
+            <h1 class="font-weight-semi-bold text-uppercase mb-3 text-light">Product Details</h1>
+            <div class="d-inline-flex">
+                <p class="m-0"><a href="/">Home</a></p>
+                <p class="m-0 px-2">-</p>
+                <p class="m-0"><%= product.prodName %>></p>
+            </div>
+        </div>
+    </div>
+    <!-- Page Header End -->
+
+    <!-- Cart Start -->
+    <div class="container-fluid pt-5">
+        <div class="row px-xl-5">
+            <div class="col-md-6">
+                <!-- Image Carousel -->
+                <div id="productCarousel" class="carousel slide" data-ride="carousel">
+                    <div class="carousel-inner">
+                        <% product.images.forEach((img, idx) => { %>
+                        <div class="carousel-item <%= idx === 0 ? 'active' : '' %>">
+                            <img src="<%= img %>" class="d-block w-100" alt="Product Image">
+                        </div>
+                        <% }) %>
+                    </div>
+                    <a class="carousel-control-prev" href="#productCarousel" role="button" data-slide="prev">
+                        <span class="carousel-control-prev-icon"></span>
+                    </a>
+                    <a class="carousel-control-next" href="#productCarousel" role="button" data-slide="next">
+                        <span class="carousel-control-next-icon"></span>
+                    </a>
+                </div>
+            </div>
+          
+            <div class="col-md-6">
+                <h2 class="mb-3"><%= product.prodName %></h2>
+                <p class="text-muted">Category: <strong><%= product.prodCat %></strong></p>
+                <p class="text-muted">Description: <strong><%= product.prodDesc %></strong></p>
+                <h4 class="text-primary">Ksh <%= product.price.toLocaleString() %></h4>
+        
+                <% if (product.availability) { %>
+                    <span class="badge badge-success">In Stock</span>
+                <% } else { %>
+                    <span class="badge badge-danger">Out of Stock</span>
+                <% } %>
+        
+                <div class="mt-4">
+                    <a href="/shop" class="btn btn-secondary">← Back to Products</a>
+                    <a href="#" class="btn btn-success ml-2 add-to-cart">Buy Now</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Cart End -->
+
+
+    <%- include('../_layouts/footer') %>
+
+
+    <!-- Back to Top -->
+    <a href="#" class="btn btn-primary back-to-top"><i class="fa fa-angle-double-up"></i></a>
+
+
+    <!-- JavaScript Libraries -->
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
+    <script src="lib/easing/easing.min.js"></script>
+    <script src="lib/owlcarousel/owl.carousel.min.js"></script>
+    
+
+    <!-- Contact Javascript File -->
+    <script src="mail/jqBootstrapValidation.min.js"></script>
+    <script src="mail/contact.js"></script>
+
+    <!-- Template Javascript -->
+    <script src="js/main.js"></script>
+</body>
+
+</html>
